@@ -115,7 +115,9 @@ public final class ReaGhidraNoReturnFix extends GhidraScript {
       a.optionsChanged(
           currentProgram.getOptions(Program.ANALYSIS_PROPERTIES).getOptions(a.getName()),
           currentProgram);
+      long t1 = System.currentTimeMillis();
       a.added(currentProgram, restored, monitor, log);
+      println("REA no-return fix: " + name + " " + (System.currentTimeMillis() - t1) + " ms");
     }
     println(
         "REA no-return fix: restored "
@@ -145,7 +147,9 @@ public final class ReaGhidraNoReturnFix extends GhidraScript {
       } catch (Exception e) {
         return true;
       }
-      if (!ins.getFlowType().isFallthrough() || !isNop(ins)) return false;
+      // int3 filler is skipped like a NOP, but only counts as padding if a function entry follows.
+      boolean filler = ins.getMnemonicString().equalsIgnoreCase("INT3");
+      if (!filler && (!ins.getFlowType().isFallthrough() || !isNop(ins))) return false;
       a = ins.getMaxAddress().next();
     }
     return false;
